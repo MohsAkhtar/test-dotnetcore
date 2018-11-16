@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DutchTreat.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DutchTreat.Data
@@ -45,9 +46,40 @@ namespace DutchTreat.Data
                 .ToList();
         }
 
+        public Order GetOrderById(int id)
+        {
+            return _context.Orders
+                .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+                .Where(o => o.Id == id)
+                .FirstOrDefault();
+        }
+
         public bool SaveAll()
         {
             return _context.SaveChanges() > 0;
+        }
+
+        public void AddEntity(object model)
+        {
+            _context.Add(model);
+        }
+
+        public IEnumerable<Order> GetAllOrders(bool includeItems = true)
+        {
+            if (includeItems)
+            {
+                return _context.Orders
+                    .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                    .ToList();
+            }
+            else
+            {
+                return _context.Orders
+                    .ToList();
+            }
+            
         }
     }
 }
